@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { readVersion } from '@shop-catalog/server-common';
+import { backendAuth, readVersion } from '@shop-catalog/server-common';
 import { createApp } from './app.js';
 
 const port = Number(process.env.PORT ?? 3002);
@@ -12,6 +12,8 @@ createApp({
   clientDist,
   version: readVersion(import.meta.dirname),
   backendTimeoutMs,
+  // BACKEND_AUTH=google on Cloud Run, where the backend is private.
+  backendHeaders: backendAuth(process.env.BACKEND_AUTH, backendUrl),
 }).listen(port, () => {
   console.log(`catalog FES on http://localhost:${port}`);
 });
