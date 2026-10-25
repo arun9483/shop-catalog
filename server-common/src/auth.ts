@@ -18,13 +18,17 @@ export function googleBackendAuth(audience: string, metadataUrl = METADATA): Bac
   let cached: { token: string; until: number } | undefined;
   return async () => {
     if (!cached || Date.now() >= cached.until) {
-      const url = `${metadataUrl}/instance/service-accounts/default/identity?audience=${encodeURIComponent(audience)}`;
+      // format=full adds the service account's email, which the receiving service checks against
+      // its invoker permission.
+      const url = `${metadataUrl}/instance/service-accounts/default/identity?audience=${encodeURIComponent(audience)}&format=full`;
       const res = await fetch(url, {
         headers: { 'Metadata-Flavor': 'Google' },
         signal: AbortSignal.timeout(2000),
       });
       if (!res.ok) throw new Error(`Identity token for ${audience}: HTTP ${res.status}`);
-      cached = { token: await res.text(), until: Date.now() + REUSE_FOR_MS };
+      const token = (await res.text()).trim();
+      if (!token) throw new Error(`Identity token for ${audience}: empty response`);
+      cached = { token, until: Date.now() + REUSE_FOR_MS };
     }
     return { Authorization: `Bearer ${cached.token}` };
   };

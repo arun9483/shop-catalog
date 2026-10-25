@@ -116,8 +116,11 @@ jobs:
           gcloud run services add-iam-policy-binding "$service" --project "$PROJECT" --region "$REGION" \
             --member "serviceAccount:$UNIT-fes@$PROJECT.iam.gserviceaccount.com" \
             --role roles/run.invoker --quiet > /dev/null
-          echo "BACKEND_URL=$(gcloud run services describe "$service" --project "$PROJECT" \
-            --region "$REGION" --format 'value(status.url)')" >> "$GITHUB_ENV"
+          url=$(gcloud run services describe "$service" --project "$PROJECT" --region "$REGION" \
+            --format 'value(status.url)')
+          # Masked, so the service's URL does not appear in the logs.
+          echo "::add-mask::$url"
+          echo "BACKEND_URL=$url" >> "$GITHUB_ENV"
 
       - name: Deploy the FES (public)
         run: |
@@ -142,14 +145,23 @@ jobs:
             --allow-unauthenticated --min-instances 0 --max-instances 1 \
             --env-vars-file fes-env.yaml \
             --set-secrets NEW_RELIC_LICENSE_KEY=new-relic-license-key:latest
-          echo "FES_URL=$(gcloud run services describe "$service" --project "$PROJECT" \
-            --region "$REGION" --format 'value(status.url)')" >> "$GITHUB_ENV"
+          url=$(gcloud run services describe "$service" --project "$PROJECT" --region "$REGION" \
+            --format 'value(status.url)')
+          echo "::add-mask::$url"
+          echo "FES_URL=$url" >> "$GITHUB_ENV"
 
       # Ready means the FES is up and can call its private backend with its identity token.
       - name: Check the deployed FES
         run: |
+          failed=0
           for path in /health/ready /api/$UNIT/products /mfe/$UNIT/entry.js; do
-            status=$(curl -s -o /dev/null -w '%{http_code}' --retry 5 --retry-delay 5 --retry-all-errors "$FES_URL$path")
+            status=000
+            for attempt in 1 2 3 4 5 6; do
+              status=$(curl -s -o /dev/null -w '%{http_code}' "$FES_URL$path" || true)
+              [ "$status" = 200 ] && break
+              sleep 10
+            done
             echo "$path -> $status"
-            test "$status" = 200
+            [ "$status" = 200 ] || failed=1
           done
+          exit $failed

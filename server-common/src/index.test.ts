@@ -127,10 +127,14 @@ describe('forward', () => {
 
 describe('googleBackendAuth', () => {
   it('gets an identity token for the backend from the metadata server, and reuses it', async () => {
-    const asked: { audience: unknown; flavor: unknown }[] = [];
+    const asked: { audience: unknown; format: unknown; flavor: unknown }[] = [];
     const metadata = express();
     metadata.get('/instance/service-accounts/default/identity', (req, res) => {
-      asked.push({ audience: req.query.audience, flavor: req.get('Metadata-Flavor') });
+      asked.push({
+        audience: req.query.audience,
+        format: req.query.format,
+        flavor: req.get('Metadata-Flavor'),
+      });
       res.send('token-123');
     });
     const server = metadata.listen(0);
@@ -140,7 +144,9 @@ describe('googleBackendAuth', () => {
     const headers = googleBackendAuth('https://catalog-backend.example', url);
     expect(await headers()).toEqual({ Authorization: 'Bearer token-123' });
     expect(await headers()).toEqual({ Authorization: 'Bearer token-123' });
-    expect(asked).toEqual([{ audience: 'https://catalog-backend.example', flavor: 'Google' }]);
+    expect(asked).toEqual([
+      { audience: 'https://catalog-backend.example', format: 'full', flavor: 'Google' },
+    ]);
     server.close();
   });
 
