@@ -118,8 +118,6 @@ jobs:
             --role roles/run.invoker --quiet > /dev/null
           url=$(gcloud run services describe "$service" --project "$PROJECT" --region "$REGION" \
             --format 'value(status.url)')
-          # Masked, so the service's URL does not appear in the logs.
-          echo "::add-mask::$url"
           echo "BACKEND_URL=$url" >> "$GITHUB_ENV"
 
       - name: Deploy the FES (public)
@@ -147,7 +145,6 @@ jobs:
             --set-secrets NEW_RELIC_LICENSE_KEY=new-relic-license-key:latest
           url=$(gcloud run services describe "$service" --project "$PROJECT" --region "$REGION" \
             --format 'value(status.url)')
-          echo "::add-mask::$url"
           echo "FES_URL=$url" >> "$GITHUB_ENV"
 
       # Ready means the FES is up and can call its private backend with its identity token.
