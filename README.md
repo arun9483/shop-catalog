@@ -57,6 +57,17 @@ font, the Shell's base styles and single-spa) and proxies `/mfe/catalog` and `/a
 `3002`. The code is the same in both modes; only the page around it differs. Add
 `--env-file <file>` with the Shell's New Relic browser keys to report errors (see the stub's README).
 
+### With HMR
+
+```sh
+pnpm start            # FES and mock backend
+pnpm standalone:dev   # the stub on :3102, running this repo's Vite: edits show without a reload
+```
+
+One process: the stub runs `client/`'s own Vite with its `vite.config.ts`, so HMR and React Fast
+Refresh work on the stub's port. The API still goes to the FES. If port 3102 is taken, pass
+`--port <n>`, set `SHELL_STUB_PORT`, or use `--port 0` for any free port.
+
 ## Check
 
 ```sh
