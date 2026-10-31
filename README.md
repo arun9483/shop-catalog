@@ -36,7 +36,7 @@ pnpm build
 pnpm start          # FES and mock backend
 ```
 
-Then run the Shell and open http://localhost:3000/catalog. The Shell's router sends `/mfe/catalog/*`
+Then run the Shell and open http://localhost:3000/catalog. `shop-router` sends `/mfe/catalog/*`
 and `/api/catalog/*` here.
 
 Catalog errors are reported by the Shell's browser agent, so `NEW_RELIC_BROWSER_APP_ID` in
