@@ -10,7 +10,7 @@ in [arun-mfe-platform](https://github.com/arun9483/arun-mfe-platform)
 | ---------------- | ------------------------------------------------------------------------ | ------ |
 | `client/`        | React + single-spa-react MFE, built with Vite, served at `/mfe/catalog/` | —      |
 | `fes/`           | Express FES: serves the client, `/api/catalog/*`, health and version     | `3002` |
-| `mock-backend/`  | Dev only. Stand-in for the Catalog backend service                       | `4002` |
+| `mock-backend/`  | Stand-in for the Catalog backend service                                 | `4002` |
 | `server-common/` | Trace context, problem+json, health and version for the servers          | —      |
 
 ## How it loads
