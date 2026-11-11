@@ -114,6 +114,19 @@ AUTH_DEV_BYPASS=true AUTH_DEV_USER_ROLES=catalog-viewer pnpm start
 pnpm standalone
 ```
 
+## Products for other backends (MVP-2)
+
+With login on, the backend also answers `GET /service/products?ids=mug,kettle` with names and prices, for other
+backends only (ADR 0005 in arun-mfe-platform):
+
+- The caller sends its own service access token. It must carry `catalog-backend` in `aud` and the API role
+  `catalog-api:read-products`, which Catalog grants in `keycloak/grants.yaml` (today: Cart's backend). A user's
+  token, or a service without the role, is refused (`401`, `403`).
+- The user the call is for comes in `X-Shop-User-Sub` and is only recorded for tracing. The user's own Catalog
+  roles are not checked: product names and prices are not the user's data, and a user without a Catalog role
+  still sees them in their cart.
+- On Docker only Catalog's backend and the backends it grants share a network (`catalog-api`).
+
 ## Identity provider settings
 
 `keycloak/shop-catalog.yaml` holds this repository's settings in the shop's identity provider (Keycloak realm `shop`):

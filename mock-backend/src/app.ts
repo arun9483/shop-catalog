@@ -35,12 +35,27 @@ export function createApp(
   version: VersionInfo,
   requireUser?: RequestHandler,
   devBypass = false,
+  requireService?: RequestHandler,
 ): Express {
   const app = express();
   app.disable('x-powered-by');
   if (devBypass) app.use(devBypassHeader);
   app.use(healthRouter({ version }));
   app.use(traceResponse);
+  // For other backends only (ADR 0005): names and prices, for a caller Catalog granted
+  // catalog-api:read-products. Product data is not the user's, so the user's own Catalog role is
+  // not checked; the user it is for (X-Shop-User-Sub) is recorded for tracing only.
+  if (requireService) {
+    app.get('/service/products', requireService, (req, res) => {
+      const query = typeof req.query.ids === 'string' ? req.query.ids : '';
+      const ids = new Set(query.split(',').filter(Boolean));
+      res.json(
+        products
+          .filter(({ id }) => ids.has(id))
+          .map(({ id, name, price }) => ({ id, name, price })),
+      );
+    });
+  }
   if (requireUser) {
     app.use(requireUser);
     app.get('/me', meHandler);

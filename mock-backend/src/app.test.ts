@@ -65,3 +65,26 @@ describe('login (MVP-2)', () => {
     expect((await request(app).get('/health/ready')).status).toBe(200);
   });
 });
+
+describe('products for other backends (MVP-2, ADR 0005)', () => {
+  const version = { name: 'mock-backend', version: '0.1.0', commit: 'test', buildTime: 'now' };
+  const granted: RequestHandler = (_req, res, next) => {
+    res.locals.caller = { clientId: 'cart-backend' };
+    next();
+  };
+
+  it('gives names and prices only, for the IDs asked', async () => {
+    const res = await request(createApp(version, undefined, false, granted)).get(
+      '/service/products?ids=mug,kettle,nope',
+    );
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      { id: 'kettle', name: 'Steel kettle', price: 1499 },
+      { id: 'mug', name: 'Stoneware mug', price: 349 },
+    ]);
+  });
+
+  it('does not exist with login off', async () => {
+    expect((await request(createApp(version)).get('/service/products?ids=mug')).status).toBe(404);
+  });
+});
