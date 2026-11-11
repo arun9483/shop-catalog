@@ -1,6 +1,6 @@
 import { Heading, Paragraph } from '@arun-dev/ui';
 import { useEffect, useState } from 'react';
-import { fetchWithTimeout } from '../timeouts';
+import { apiFetch } from '../auth';
 import { NavLink } from './NavLink';
 import { formatPrice, type Product } from './products';
 
@@ -15,7 +15,7 @@ export default function ProductDetail({ id }: { id: string }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchWithTimeout(`/api/catalog/products/${encodeURIComponent(id)}`, controller.signal)
+    apiFetch(`/api/catalog/products/${encodeURIComponent(id)}`, controller.signal)
       .then(async (res) => {
         if (res.ok) setState({ status: 'ready', product: (await res.json()) as Product });
         else setState({ status: res.status === 404 ? 'missing' : 'failed' });

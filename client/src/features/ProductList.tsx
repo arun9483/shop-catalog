@@ -1,6 +1,6 @@
 import { Heading, Paragraph } from '@arun-dev/ui';
 import { useEffect, useState } from 'react';
-import { fetchWithTimeout } from '../timeouts';
+import { apiFetch } from '../auth';
 import styles from './Catalog.module.css';
 import { NavLink } from './NavLink';
 import { formatPrice, type Product } from './products';
@@ -11,7 +11,7 @@ export default function ProductList() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchWithTimeout('/api/catalog/products', controller.signal)
+    apiFetch('/api/catalog/products', controller.signal)
       .then((res) => (res.ok ? (res.json() as Promise<Product[]>) : Promise.reject(new Error())))
       .then((list) => {
         setProducts(list);
