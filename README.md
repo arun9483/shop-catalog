@@ -86,3 +86,10 @@ Actions signs in with workload identity federation.
 ```sh
 pnpm lint && pnpm typecheck && pnpm test
 ```
+
+## Identity provider settings
+
+`keycloak/shop-catalog.yaml` holds this repository's settings in the shop's identity provider (Keycloak realm `shop`):
+the `catalog-backend` client, Catalog's user roles and API roles, and who holds them, including other units' backends. [shop-mfe-platform](https://github.com/arun9483/shop-mfe-platform) applies it on Docker when single
+sign-on runs, together with every other repository's file. Roles are granted through this repository's own groups. `keycloak/grants.yaml` grants Catalog's API roles to other units' service accounts, so the two files list everyone who may use Catalog. Copy `keycloak/.env.example` to `keycloak/.env` and set a random secret. Nothing in this repository reads it yet; see
+[MVP-2](https://github.com/arun9483/arun-mfe-platform/blob/main/docs/mvp-2-sso.md).

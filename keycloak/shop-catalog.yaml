@@ -1,0 +1,50 @@
+# Catalog's settings in the shop's identity provider (Keycloak realm `shop`), applied by
+# shop-mfe-platform's settings importer (keycloak-config-cli). Secrets come from keycloak/.env.
+# Catalog grants its own roles: this file and grants.yaml list everyone who may use Catalog.
+realm: shop
+
+clients:
+  - clientId: catalog-backend
+    protocol: openid-connect
+    publicClient: false
+    secret: $(env:CATALOG_BACKEND_SECRET)
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    # Keycloak 26.8's admin API takes only tokens with this scope. Optional: the backend asks for it only
+    # for admin API calls, so tokens it sends to other backends never carry admin API rights.
+    optionalClientScopes: [kc-admin-api]
+
+roles:
+  client:
+    catalog-backend:
+      # What a person may do in Catalog.
+      - name: catalog-viewer
+      - name: catalog-editor
+      # What another backend may call.
+      - name: catalog-api:read-products
+        description: Read product names and prices
+
+# Roles are granted through Catalog's own groups: several repositories' files name the same users and
+# service accounts, and only group memberships merge across files.
+groups:
+  - name: catalog
+    subGroups:
+      - name: viewer
+        clientRoles:
+          catalog-backend: [catalog-viewer]
+      - name: editor
+        clientRoles:
+          catalog-backend: [catalog-editor]
+      - name: api-read-products
+        clientRoles:
+          catalog-backend: ['catalog-api:read-products']
+
+users:
+  # Lets the backend read users by sub.
+  - username: service-account-catalog-backend
+    clientRoles:
+      realm-management: [view-users]
+  # Test users: bob has no Catalog role.
+  - username: alice
+    groups: [/catalog/viewer, /catalog/editor]
