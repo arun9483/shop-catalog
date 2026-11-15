@@ -1,7 +1,7 @@
-# Catalog's settings in the shop's identity provider (Keycloak realm `shop`), applied by
+# Catalog's settings in the tenant's identity provider (Keycloak realm OIDC_REALM, default shop), applied by
 # shop-mfe-platform's settings importer (keycloak-config-cli). Secrets come from keycloak/.env.
 # Catalog grants its own roles: this file and grants.yaml list everyone who may use Catalog.
-realm: shop
+realm: $(env:OIDC_REALM)
 
 clients:
   - clientId: catalog-backend
