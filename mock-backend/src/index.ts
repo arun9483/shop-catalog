@@ -1,13 +1,12 @@
 import {
-  closeOnSignal,
   connectIdp,
   devBypassFromEnv,
   devRequireUser,
   oidcSettingsFromEnv,
-  readVersion,
   requireService,
   requireUser,
-} from '@shop-catalog/server-common';
+} from '@arun-dev/server/auth';
+import { closeOnSignal, readVersion } from '@arun-dev/server/http';
 import { createApp } from './app.js';
 
 const port = Number(process.env.PORT ?? 4002);
@@ -16,7 +15,9 @@ const port = Number(process.env.PORT ?? 4002);
 const dev = devBypassFromEnv();
 const settings = dev ? undefined : oidcSettingsFromEnv();
 const idp = settings && connectIdp(settings);
-const loggedIn = dev ? devRequireUser(dev) : idp && requireUser({ ...idp, unit: 'catalog' });
+const loggedIn = dev
+  ? devRequireUser(dev)
+  : idp && requireUser({ ...idp, audience: 'catalog-backend' });
 // Other backends reading products (ADR 0005): only with login on, never with the bypass.
 const service =
   idp && requireService({ ...idp, audience: 'catalog-backend', role: 'catalog-api:read-products' });
