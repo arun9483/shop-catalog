@@ -1,6 +1,6 @@
 # Catalog's roles granted to other repositories' service accounts: Catalog's API consumers. Applied
 # after every repository's own file, once those service accounts exist.
-realm: shop
+realm: $(env:OIDC_REALM)
 
 users:
   - username: service-account-cart-backend
