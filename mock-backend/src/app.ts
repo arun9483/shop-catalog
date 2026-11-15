@@ -1,14 +1,13 @@
 import express, { type Express, type RequestHandler } from 'express';
+import { devBypassHeader, meHandler } from '@arun-dev/server/auth';
 import {
-  devBypassHeader,
   healthRouter,
-  meHandler,
   HttpError,
   notFound,
   problemHandler,
   traceResponse,
   type VersionInfo,
-} from '@shop-catalog/server-common';
+} from '@arun-dev/server/http';
 
 const products = [
   {
